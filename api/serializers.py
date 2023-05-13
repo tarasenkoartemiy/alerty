@@ -25,6 +25,8 @@ class UserSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=64)
     last_name = serializers.CharField(max_length=64, default="")
     username = serializers.CharField(max_length=32, default="")
+    created_at = serializers.DateTimeField(read_only=True)
+    update_at = serializers.DateTimeField(read_only=True)
     language_code = serializers.CharField(max_length=2, default=User.Language.ENGLISH)
     step = serializers.CharField(max_length=15, default="")
     city_id = serializers.IntegerField(default=None)
