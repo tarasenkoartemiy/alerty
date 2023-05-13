@@ -14,11 +14,11 @@ class User(models.Model):
         ENGLISH = "en", _("English")
 
     class Step(models.TextChoices):
-        ENTER_REMINDER = "enter_reminder", _("enter_reminder")
-        CHANGE_TEXT = "change_text", _("change_text")
-        CHANGE_DATETIME = "change_datetime", _("change_datetime")
+        UPDATE_CITY = "update_city", _("update_city")
+        CREATE_REMINDER = "create_reminder", _("create_reminder")
         ADD_DATETIME = "add_datetime", _("add_datetime")
-        CHANGE_CITY = "change_city", _("change_city")
+        UPDATE_DATETIME = "update_datetime", _("update_datetime")
+        UPDATE_TEXT = "update_text", _("update_text")
 
     is_bot = models.BooleanField()
     first_name = models.CharField(max_length=64)
@@ -31,7 +31,6 @@ class User(models.Model):
 
 class Reminder(models.Model):
     class Status(models.TextChoices):
-        DRAFT = "draft", _("draft")
         ACTIVE = "active", _("active")
         INACTIVE = "inactive", _("inactive")
         DONE = "done", _("done")

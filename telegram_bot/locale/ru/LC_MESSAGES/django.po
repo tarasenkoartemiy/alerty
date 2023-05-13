@@ -1,0 +1,80 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-05-13 19:15+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
+"(n%100>=11 && n%100<=14)? 2 : 3);\n"
+#: values.py:6
+msgid "What should I remind you about?"
+msgstr "О чем вам напомнить?"
+
+#: values.py:7
+msgid "You can't use this command yet"
+msgstr "Вы пока не можете использовать эту команду"
+
+#: values.py:10
+msgid "Please write the name of the city whose time zone you want to use"
+msgstr "Пожалуйста, напишите название города, часовой пояс которого вы хотите использовать"
+
+#: values.py:11
+msgid "Your time zone has been successfully determined"
+msgstr "Ваш часовой пояс успешно определен"
+
+#: values.py:12
+msgid "The service I'm using for this operation is not working right now"
+msgstr "Служба, которую я использую для этой операции, сейчас не работает"
+
+#: values.py:13
+msgid "I don't know this city, try again"
+msgstr "Я не знаю этот город, попробуйте еще раз"
+
+#: values.py:16
+msgid "Please select interface language"
+msgstr "Выберите язык интерфейса"
+
+#: values.py:17
+msgid "This language has already been chosen by you"
+msgstr "Этот язык уже выбран вами"
+
+#: values.py:18
+msgid "Your language has been successfully changed"
+msgstr "Ваш язык был успешно изменен"
+
+#: values.py:21
+msgid "I can't determine what time zone you are in right now. Please try again later"
+msgstr "Я не могу определить, в каком часовом поясе вы сейчас находитесь. Пожалуйста, повторите попытку позже"
+
+#: values.py:22
+msgid "Reminder successfully recorded"
+msgstr "Напоминание успешно записано"
+
+#: values.py:23
+msgid "You cannot select a date that has already passed. Please try again"
+msgstr "Вы не можете выбрать дату, которая уже прошла. Пожалуйста, попробуйте еще раз"
+
+#: values.py:24
+msgid "Wrong format, try again"
+msgstr "Неверный формат, попробуйте еще раз"
+
+#: values.py:27
+msgid "English"
+msgstr "Английский"
+
+#: values.py:28
+msgid "Russian"
+msgstr "Русский"

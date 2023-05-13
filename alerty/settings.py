@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_spectacular',
-    'api'
+    'api',
+    'telegram_bot'
 ]
 
 MIDDLEWARE = [
@@ -140,3 +141,5 @@ SPECTACULAR_SETTINGS = {
 }
 
 TELEBOT_TOKEN = env("TELEBOT_TOKEN")
+
+BASE_URL = env("BASE_URL")

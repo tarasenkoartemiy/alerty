@@ -21,7 +21,7 @@ class UserViewSet(mixins.CreateModelMixin,
     serializer_class = UserSerializer
     http_method_names = ['get', 'post', 'patch']
 
-    @action(url_path='reminders', detail=False)
+    @action(url_path='reminders', detail=True)
     def get_personal_reminders(self, request, *args, **kwargs):
         user = self.get_object()
         reminders = user.reminders.all()

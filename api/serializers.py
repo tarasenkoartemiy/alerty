@@ -3,7 +3,7 @@ from .models import City, User, Reminder
 
 
 class CitySerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
+    id = serializers.IntegerField()
     name = serializers.CharField(max_length=255)
     lat = serializers.FloatField()
     lon = serializers.FloatField()
@@ -37,7 +37,7 @@ class UserSerializer(serializers.Serializer):
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.last_name = validated_data.get("last_name", instance.last_name)
         instance.username = validated_data.get("username", instance.username)
-        instance.lang_code = validated_data.get("lang_code", instance.lang_code)
+        instance.language_code = validated_data.get("language_code", instance.language_code)
         instance.step = validated_data.get("step", instance.step)
         instance.city_id = validated_data.get("city_id", instance.city_id)
         instance.save()
