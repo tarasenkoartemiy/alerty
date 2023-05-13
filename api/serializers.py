@@ -21,17 +21,19 @@ class CitySerializer(serializers.Serializer):
 
 class UserSerializer(serializers.Serializer):
     id = serializers.IntegerField()
+    is_bot = serializers.BooleanField()
     first_name = serializers.CharField(max_length=64)
     last_name = serializers.CharField(max_length=64, default="")
     username = serializers.CharField(max_length=32, default="")
-    lang_code = serializers.CharField(max_length=2, default=User.Language.ENGLISH)
-    step = serializers.CharField(max_length=15)
-    city_id = serializers.IntegerField()
+    language_code = serializers.CharField(max_length=2, default=User.Language.ENGLISH)
+    step = serializers.CharField(max_length=15, default="")
+    city_id = serializers.IntegerField(default=None)
 
     def create(self, validated_data):
         return User.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
+        instance.is_bot = validated_data.get("is_bot", instance.is_bot)
         instance.first_name = validated_data.get("first_name", instance.first_name)
         instance.last_name = validated_data.get("last_name", instance.last_name)
         instance.username = validated_data.get("username", instance.username)

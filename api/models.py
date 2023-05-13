@@ -20,12 +20,13 @@ class User(models.Model):
         ADD_DATETIME = "add_datetime", _("add_datetime")
         CHANGE_CITY = "change_city", _("change_city")
 
+    is_bot = models.BooleanField()
     first_name = models.CharField(max_length=64)
     last_name = models.CharField(max_length=64)
     username = models.CharField(max_length=32)
-    lang_code = models.CharField(max_length=2, choices=Language.choices)
+    language_code = models.CharField(max_length=2, choices=Language.choices)
     step = models.CharField(max_length=15, choices=Step.choices)
-    city = models.ForeignKey(City, on_delete=models.PROTECT, related_name='users')
+    city = models.ForeignKey(City, on_delete=models.PROTECT, related_name='users', null=True)
 
 
 class Reminder(models.Model):
