@@ -39,10 +39,6 @@ def dispatch(http_method_name, view_name, args=None, **kwargs):
         return
 
 
-def get_available_language_codes():
-    return map(str.lower, filter(lambda x: not x.startswith("__"), dir(Phrase.Button)))
-
-
 @bot.message_handler(commands=["start"])
 def handle_start(message):
     inc_data = message.__dict__
@@ -52,21 +48,19 @@ def handle_start(message):
     db_user_data = dispatch("get", "user-detail", args=(inc_user_id,))
 
     if db_user_data:
-        translation.activate(db_user_data["language_code"])
-        user_step = db_user_data.get("step", None)
-        match user_step:
-            case User.Step.UPDATE_CITY:
-                reply_message = Phrase.get("Start", "INVALID_CALL")
-            case _:
-                user_request_data = {"step": User.Step.CREATE_REMINDER}
-                dispatch("patch", "user-detail", data=user_request_data, args=(inc_user_id,))
+        with translation.override(db_user_data["language_code"]):
+            match db_user_data["step"]:
+                case User.Step.UPDATE_CITY:
+                    reply_message = Phrase.get("Start", "INVALID_CALL")
+                case _:
+                    user_request_data = {"step": User.Step.CREATE_REMINDER}
+                    dispatch("patch", "user-detail", data=user_request_data, args=(inc_user_id,))
 
-                reply_message = Phrase.get("Start", "INVALID_CALL")
-        bot.send_message(inc_user_id, reply_message)
-        translation.deactivate()
+                    reply_message = Phrase.get("Start", "INVALID_CALL")
+            bot.send_message(inc_user_id, reply_message)
     else:
-        if inc_user_id["language_code"] not in get_available_language_codes():
-            inc_user_id["language_code"] = translation.get_language()
+        if not translation.check_for_language(inc_user_data["language_code"]):
+            inc_user_data["language_code"] = translation.get_language()
 
         dispatch("post", "user-list", data=inc_user_data)
         handle_city(message)
@@ -100,22 +94,13 @@ def handle_language(message):
 @bot.message_handler(commands=["city"])
 def handle_city(message):
     user_id = message.chat.id
-    db_user_data = dispatch("get", "user-detail", args=(user_id,))
-    language_code = db_user_data["language_code"]
 
     user_request_data = {"step": User.Step.UPDATE_CITY}
+    db_user_data = dispatch("patch", "user-detail", args=(user_id,), data=user_request_data)
 
-    if language_code not in get_available_language_codes():
-        user_request_data["language_code"] = "en"
-    else:
-        translation.activate(language_code)
-
-    dispatch("patch", "user-detail", data=user_request_data, args=(user_id,))
-
-    reply_message = Phrase.get("City", "INSTRUCTION")
-    bot.send_message(user_id, reply_message)
-
-    translation.deactivate()
+    with translation.override(db_user_data["language_code"]):
+        reply_message = Phrase.get("City", "INSTRUCTION")
+        bot.send_message(user_id, reply_message)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -146,81 +131,75 @@ def handle_callback_query(call):
 @bot.message_handler(content_types=["text"])
 def handle_text(message):
     user_id = message.chat.id
+
     db_user_data = dispatch("get", "user-detail", args=(user_id,))
-    user_step = db_user_data["step"]
 
-    language_code = db_user_data["language_code"]
-    translation.activate(language_code)
-
-    match user_step:
-        case User.Step.UPDATE_CITY:
-            resp = get_city(city=message.text, format="json", limit=1)
-            if isinstance(resp, bool) or not resp.ok:
-                reply_message = Phrase.get("City", "INVALID_RESP")
-            elif info_list := resp.json():
-                city_info = info_list[0]
-
-                db_city_data = dispatch("get", "city-detail", args=(city_info["place_id"],))
-                city_id = db_city_data.get("id", None)
-
-                if not city_id:
-                    city_request_data = {
-                        "id": city_info["place_id"],
-                        "name": city_info["display_name"].split(",")[0],
-                        "lat": city_info["lat"],
-                        "lon": city_info["lon"]
-                    }
-                    dispatch("post", "city-list", data=city_request_data)
-
-                user_request_data = {"step": User.Step.CREATE_REMINDER, "city": city_info["place_id"]}
-                dispatch("patch", "user-detail", data=user_request_data, args=(user_id,))
-
-                reply_message = Phrase.get("City", "VALID_RESP")
-            else:
-                reply_message = Phrase.get("City", "INVALID_CITY")
-            bot.send_message(user_id, reply_message)
-        case User.Step.CREATE_REMINDER:
-            reminder_content = message.text.split("\n")
-            if len(reminder_content) == 2:
-                text, datetime = reminder_content
-
-                db_city_data = dispatch("get", "city-detail", args=(db_user_data["city"],))
-                resp = get_timezone(latitude=db_city_data["lat"], longitude=db_city_data["lon"])
-
+    with translation.override(db_user_data["language_code"]):
+        match db_user_data["step"]:
+            case User.Step.UPDATE_CITY:
+                resp = get_city(city=message.text, format="json", limit=1)
                 if isinstance(resp, bool) or not resp.ok:
                     reply_message = Phrase.get("City", "INVALID_RESP")
+                elif info_list := resp.json():
+                    city_info = info_list[0]
+
+                    if not dispatch("get", "city-detail", args=(city_info["place_id"],)):
+                        city_request_data = {
+                            "id": city_info["place_id"],
+                            "name": city_info["display_name"].split(",")[0],
+                            "lat": city_info["lat"],
+                            "lon": city_info["lon"]
+                        }
+                        dispatch("post", "city-list", data=city_request_data)
+
+                    user_request_data = {"step": User.Step.CREATE_REMINDER, "city": city_info["place_id"]}
+                    dispatch("patch", "user-detail", data=user_request_data, args=(user_id,))
+
+                    reply_message = Phrase.get("City", "VALID_RESP")
                 else:
-                    tz_name = resp.json()["timeZone"]
-                    setup = {'TIMEZONE': tz_name, 'RETURN_AS_TIMEZONE_AWARE': True}
-                    datetime_obj = dateparser.parse(datetime, settings=setup)
+                    reply_message = Phrase.get("City", "INVALID_CITY")
+                bot.send_message(user_id, reply_message)
+            case User.Step.CREATE_REMINDER:
+                reminder_content = message.text.split("\n")
+                if len(reminder_content) == 2:
+                    text, datetime = reminder_content
 
-                    if datetime_obj:
-                        if datetime_obj > timezone.now():
-                            reminder_request_data = {
-                                "text": text,
-                                "datetime": datetime_obj,
-                                "status": Reminder.Status.ACTIVE,
-                                "user": user_id
-                            }
-                            print(reminder_request_data)
-                            print(type(datetime_obj))
-                            dispatch("post", "reminder-list", data=reminder_request_data)
+                    db_city_data = dispatch("get", "city-detail", args=(db_user_data["city"],))
+                    resp = get_timezone(latitude=db_city_data["lat"], longitude=db_city_data["lon"])
 
-                            reply_message = Phrase.get("CreateReminder", "VALID_DATETIME")
-                        else:
-                            reply_message = Phrase.get("CreateReminder", "PAST_DATETIME")
+                    if isinstance(resp, bool) or not resp.ok:
+                        reply_message = Phrase.get("City", "INVALID_RESP")
                     else:
-                        reply_message = Phrase.get("CreateReminder", "INVALID_RESP")
-            else:
-                reply_message = Phrase.get("CreateReminder", "WRONG_REMINDER_FORMAT")
-            bot.send_message(user_id, reply_message)
-        case User.Step.ADD_DATETIME:
-            pass
-        case User.Step.UPDATE_DATETIME:
-            pass
-        case User.Step.UPDATE_TEXT:
-            pass
-    translation.deactivate()
+                        tz_name = resp.json()["timeZone"]
+                        setup = {'TIMEZONE': tz_name, 'RETURN_AS_TIMEZONE_AWARE': True}
+                        datetime_obj = dateparser.parse(datetime, settings=setup)
+
+                        if datetime_obj:
+                            if datetime_obj > timezone.now():
+                                reminder_request_data = {
+                                    "text": text,
+                                    "datetime": datetime_obj,
+                                    "status": Reminder.Status.ACTIVE,
+                                    "user": user_id
+                                }
+                                print(reminder_request_data)
+                                print(type(datetime_obj))
+                                dispatch("post", "reminder-list", data=reminder_request_data)
+
+                                reply_message = Phrase.get("CreateReminder", "VALID_DATETIME")
+                            else:
+                                reply_message = Phrase.get("CreateReminder", "PAST_DATETIME")
+                        else:
+                            reply_message = Phrase.get("CreateReminder", "INVALID_RESP")
+                else:
+                    reply_message = Phrase.get("CreateReminder", "WRONG_REMINDER_FORMAT")
+                bot.send_message(user_id, reply_message)
+            case User.Step.ADD_DATETIME:
+                pass
+            case User.Step.UPDATE_DATETIME:
+                pass
+            case User.Step.UPDATE_TEXT:
+                pass
 
 
 bot.infinity_polling()
