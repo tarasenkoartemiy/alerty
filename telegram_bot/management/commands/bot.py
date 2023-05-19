@@ -24,12 +24,19 @@ BASE_URL = settings.BASE_URL
 bot = telebot.TeleBot(settings.TELEBOT_TOKEN)
 
 
-def dispatch(http_method_name: str, view_name: str, data: dict = None, args: tuple = None) -> dict:
+def get_url(view_name, args):
     path = reverse(view_name, args=args)
-    url = BASE_URL + path
+    return BASE_URL + path
 
-    handler = getattr(requests, http_method_name)
-    return handler(url, data=data).json()
+
+def dispatch(http_method_name, view_name, args=None, **kwargs):
+    url = get_url(view_name, args)
+    try:
+        response = requests.request(http_method_name, url, **kwargs)
+        if response.ok:
+            return response.json()
+    except requests.exceptions.RequestException:
+        return
 
 
 def get_available_language_codes():
@@ -38,29 +45,31 @@ def get_available_language_codes():
 
 @bot.message_handler(commands=["start"])
 def handle_start(message):
-    incoming_data = message.__dict__
-    incoming_user_data = incoming_data["json"]["from"]
-    language_code = incoming_user_data["language_code"]
+    inc_data = message.__dict__
+    inc_user_data = inc_data["json"]["from"]
+    inc_user_id = inc_user_data["id"]
 
-    translation.activate(language_code)
+    db_user_data = dispatch("get", "user-detail", args=(inc_user_id,))
 
-    db_user_data = dispatch("get", "user-detail", args=(incoming_user_data["id"],))
-    user_step = db_user_data.get("step", None)
+    if db_user_data:
+        translation.activate(db_user_data["language_code"])
+        user_step = db_user_data.get("step", None)
+        match user_step:
+            case User.Step.UPDATE_CITY:
+                reply_message = Phrase.get("Start", "INVALID_CALL")
+            case _:
+                user_request_data = {"step": User.Step.CREATE_REMINDER}
+                dispatch("patch", "user-detail", data=user_request_data, args=(inc_user_id,))
 
-    match user_step:
-        case None:
-            dispatch("post", "user-list", data=incoming_user_data)
-            handle_city(message)
-        case User.Step.UPDATE_CITY:
-            reply_message = Phrase.get("Start", "INVALID_CALL")
-            bot.send_message(incoming_user_data["id"], reply_message)
-        case _:
-            user_request_data = {"step": User.Step.CREATE_REMINDER}
-            dispatch("patch", "user-detail", data=user_request_data, args=(incoming_user_data["id"],))
+                reply_message = Phrase.get("Start", "INVALID_CALL")
+        bot.send_message(inc_user_id, reply_message)
+        translation.deactivate()
+    else:
+        if inc_user_id["language_code"] not in get_available_language_codes():
+            inc_user_id["language_code"] = translation.get_language()
 
-            reply_message = Phrase.get("Start", "VALID_CALL")
-            bot.send_message(incoming_user_data["id"], reply_message)
-    translation.deactivate()
+        dispatch("post", "user-list", data=inc_user_data)
+        handle_city(message)
 
 
 @bot.message_handler(commands=["language"])
