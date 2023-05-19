@@ -163,7 +163,7 @@ def handle_text(message):
                     }
                     dispatch("post", "city-list", data=city_request_data)
 
-                user_request_data = {"step": User.Step.CREATE_REMINDER, "city_id": city_info["place_id"]}
+                user_request_data = {"step": User.Step.CREATE_REMINDER, "city": city_info["place_id"]}
                 dispatch("patch", "user-detail", data=user_request_data, args=(user_id,))
 
                 reply_message = Phrase.get("City", "VALID_RESP")
@@ -175,7 +175,7 @@ def handle_text(message):
             if len(reminder_content) == 2:
                 text, datetime = reminder_content
 
-                db_city_data = dispatch("get", "city-detail", args=(db_user_data["city_id"],))
+                db_city_data = dispatch("get", "city-detail", args=(db_user_data["city"],))
                 resp = get_timezone(latitude=db_city_data["lat"], longitude=db_city_data["lon"])
 
                 if isinstance(resp, bool) or not resp.ok:
@@ -191,8 +191,10 @@ def handle_text(message):
                                 "text": text,
                                 "datetime": datetime_obj,
                                 "status": Reminder.Status.ACTIVE,
-                                "user_id": user_id
+                                "user": user_id
                             }
+                            print(reminder_request_data)
+                            print(type(datetime_obj))
                             dispatch("post", "reminder-list", data=reminder_request_data)
 
                             reply_message = Phrase.get("CreateReminder", "VALID_DATETIME")

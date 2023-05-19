@@ -3,6 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 class City(models.Model):
+    id = models.IntegerField(primary_key=True, editable=False)
     name = models.CharField(max_length=255)
     lat = models.FloatField()
     lon = models.FloatField()
@@ -23,15 +24,16 @@ class User(models.Model):
         UPDATE_DATETIME = "update_datetime", _("update_datetime")
         UPDATE_TEXT = "update_text", _("update_text")
 
+    id = models.IntegerField(primary_key=True, editable=False)
     is_bot = models.BooleanField()
     first_name = models.CharField(max_length=64)
-    last_name = models.CharField(max_length=64)
-    username = models.CharField(max_length=32)
+    last_name = models.CharField(max_length=64, default="")
+    username = models.CharField(max_length=32, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    language_code = models.CharField(max_length=2, choices=Language.choices)
-    step = models.CharField(max_length=15, choices=Step.choices)
-    city = models.ForeignKey(City, on_delete=models.PROTECT, related_name='users', null=True, blank=True)
+    language_code = models.CharField(max_length=2, choices=Language.choices, default=Language.ENGLISH)
+    step = models.CharField(max_length=15, choices=Step.choices, default="")
+    city = models.ForeignKey(City, on_delete=models.PROTECT, related_name='users', null=True, blank=True, default=None)
 
     def __str__(self):
         return self.username
@@ -47,6 +49,6 @@ class Reminder(models.Model):
         REDACTING = "redacting", _("redacting")
 
     text = models.TextField()
-    datetime = models.DateTimeField(null=True, blank=True)
+    datetime = models.DateTimeField(null=True, blank=True, default=None)
     status = models.CharField(max_length=9, choices=Status.choices)
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='reminders')

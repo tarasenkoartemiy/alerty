@@ -52,6 +52,6 @@ class ReminderAdmin(admin.ModelAdmin):
 
     @admin.display(description="remaining time")
     def calculate_remainder(self, instance):
-        if timezone.now() > instance.datetime:
-            return timezone.now() - instance.datetime
+        if instance.datetime and instance.datetime > timezone.now():
+            return instance.datetime - timezone.now()
         return "-"
