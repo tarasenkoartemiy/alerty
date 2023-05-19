@@ -1,4 +1,5 @@
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
+from django.utils.encoding import force_str
 
 
 class Phrase:
@@ -31,5 +32,4 @@ class Phrase:
     def get(cls, subclass_name: str, attr_name: str) -> str:
         subclass = getattr(cls, subclass_name)
         attr = getattr(subclass, attr_name)
-        return _(attr)
-
+        return force_str(attr)
