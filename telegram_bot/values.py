@@ -12,6 +12,7 @@ class Phrase:
         VALID_RESP = _("Your time zone has been successfully determined")
         INVALID_RESP = _("The service I'm using for this operation is not working right now")
         INVALID_CITY = _("I don't know this city, try again")
+        SAME_CITY = _("You are already using the time zone of this city")
 
     class Language:
         INSTRUCTION = _("Please select interface language")
@@ -20,9 +21,10 @@ class Phrase:
 
     class CreateReminder:
         INVALID_RESP = _("I can't determine what time zone you are in right now. Please try again later")
-        VALID_DATETIME = _("Reminder successfully recorded")
-        PAST_DATETIME = _("You cannot select a date that has already passed. Please try again")
-        WRONG_REMINDER_FORMAT = _("Wrong format, try again")
+        VALID_REMINDER = _("Reminder successfully recorded")
+        PAST_DATETIME = _("You cannot select a date that has already passed")
+        INVALID_REMINDER = _("I can't recognize the datetime in your reminder")
+        SEVERAL_DATES = _("I found several datetime indications in your reminder, please indicate only one")
 
     class Button:
         EN = _("English")

@@ -42,3 +42,8 @@ def city_api_request(city):
     params = {"city": city, "format": "json", "limit": 1}
     headers = {"accept-language": "en-US,en;q=0.9"}
     return requests.get("https://nominatim.openstreetmap.org/search?", params, headers=headers)
+
+
+def timezone_api_request(lat, lon):
+    params = {"latitude": lat, "longitude": lon}
+    return requests.get("https://timeapi.io/api/Time/current/coordinate?", params)

@@ -4,11 +4,12 @@ from django.utils import timezone, translation
 
 from api.models import *
 from telegram_bot.actions import *
-from telegram_bot.generic_actions import city_api_request
+from telegram_bot.generic_actions import city_api_request, timezone_api_request
 from telegram_bot.values import Phrase
 
 import telebot
-import dateparser
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from dateparser.search import search_dates
 
 
 class Command(BaseCommand):
@@ -17,8 +18,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         pass
 
-
-TIMEAPI_LINK = "https://timeapi.io/api/TimeZone/coordinate?"
 
 bot = telebot.TeleBot(settings.TELEBOT_TOKEN)
 
@@ -40,7 +39,7 @@ def handle_start(message):
                     user_request_data = {"step": User.Step.CREATE_REMINDER}
                     update_user(inc_user_id, user_request_data)
 
-                    reply_message = Phrase.get("Start", "INVALID_CALL")
+                    reply_message = Phrase.get("Start", "VALID_CALL")
             bot.send_message(inc_user_id, reply_message)
     else:
         if not translation.check_for_language(inc_user_data["language_code"]):
@@ -54,25 +53,17 @@ def handle_start(message):
 def handle_language(message):
     user_id = message.chat.id
     db_user_data = retrieve_user(user_id)
-    language_code = db_user_data["language_code"]
 
-    translation.activate(language_code)
+    with translation.override(db_user_data["language_code"]):
+        btn1 = InlineKeyboardButton(Phrase.get("Button", "EN"), callback_data="LANGUAGE:EN")
+        btn2 = InlineKeyboardButton(Phrase.get("Button", "RU"), callback_data="LANGUAGE:RU")
 
-    btn1_name = Phrase.get("Button", "EN")
-    btn2_name = Phrase.get("Button", "RU")
+        reply_message = Phrase.get("Language", "INSTRUCTION")
 
-    btn1_callback = "LANGUAGE:EN"
-    btn2_callback = "LANGUAGE:RU"
-
-    btn1 = telebot.types.InlineKeyboardButton(btn1_name, callback_data=btn1_callback)
-    btn2 = telebot.types.InlineKeyboardButton(btn2_name, callback_data=btn2_callback)
-    reply_markup = telebot.types.InlineKeyboardMarkup()
+    reply_markup = InlineKeyboardMarkup()
     reply_markup.add(*(btn1, btn2))
 
-    reply_message = Phrase.get("Language", "INSTRUCTION")
     bot.send_message(message.chat.id, reply_message, reply_markup=reply_markup)
-
-    translation.deactivate()
 
 
 @bot.message_handler(commands=["city"])
@@ -84,7 +75,7 @@ def handle_city(message):
 
     with translation.override(db_user_data["language_code"]):
         reply_message = Phrase.get("City", "INSTRUCTION")
-        bot.send_message(user_id, reply_message)
+    bot.send_message(user_id, reply_message)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -93,23 +84,19 @@ def handle_callback_query(call):
 
     user_id = call.message.chat.id
     db_user_data = retrieve_user(user_id)
-    language_code = db_user_data["language_code"]
 
-    translation.activate(language_code)
+    with translation.override(db_user_data["language_code"]):
+        match prefix:
+            case "LANGUAGE":
+                if translation.get_language() != action.lower():
+                    user_request_data = {"language_code": action.lower()}
+                    update_user(user_id, user_request_data)
 
-    match prefix:
-        case "LANGUAGE":
-            if language_code != action.lower():
-                user_request_data = {"language_code": action.lower()}
-                update_user(user_id, user_request_data)
-
-                translation.activate(action.lower())
-                reply_message = Phrase.get("Language", "ANOTHER_CHOICE")
-            else:
-                reply_message = Phrase.get("Language", "SAME_CHOICE")
-            bot.send_message(user_id, reply_message)
-
-    translation.deactivate()
+                    translation.activate(action.lower())
+                    reply_message = Phrase.get("Language", "ANOTHER_CHOICE")
+                else:
+                    reply_message = Phrase.get("Language", "SAME_CHOICE")
+    bot.send_message(user_id, reply_message)
 
 
 @bot.message_handler(content_types=["text"])
@@ -123,8 +110,9 @@ def handle_text(message):
             case User.Step.UPDATE_CITY:
                 response = city_api_request(message.text)
                 if response.ok and response.headers.get("Content-Type", "").startswith("application/json"):
-                    inc_city_data = response.json()
-                    if inc_city_data:
+                    inc_city_list = response.json()
+                    if inc_city_list:
+                        inc_city_data = inc_city_list[0]
                         inc_city_id = inc_city_data["place_id"]
                         if inc_city_id != db_user_data["city"]:
                             if not retrieve_city(inc_city_id):
@@ -132,7 +120,7 @@ def handle_text(message):
                                     "id": inc_city_id,
                                     "name": inc_city_data["display_name"].split(",")[0],
                                     "lat": inc_city_data["lat"],
-                                    "lot": inc_city_data["lot"]
+                                    "lon": inc_city_data["lon"]
                                 }
                                 create_city(city_request_data)
                             user_request_data = {"step": User.Step.CREATE_REMINDER, "city": inc_city_id}
@@ -140,54 +128,49 @@ def handle_text(message):
 
                             reply_message = Phrase.get("City", "VALID_RESP")
                         else:
-                            reply_message = "Совпадает город сука"
+                            reply_message = Phrase.get("City", "SAME_CITY")
                     else:
                         reply_message = Phrase.get("City", "INVALID_CITY")
                 else:
                     reply_message = Phrase.get("City", "INVALID_RESP")
-                bot.send_message(user_id, reply_message)
             case User.Step.CREATE_REMINDER:
-                # reminder_content = message.text.split("\n")
-                # if len(reminder_content) == 2:
-                #     text, datetime = reminder_content
-                #
-                #     db_city_data = dispatch("get", "city-detail", args=(db_user_data["city"],))
-                #     resp = get_timezone(latitude=db_city_data["lat"], longitude=db_city_data["lon"])
-                #
-                #     if isinstance(resp, bool) or not resp.ok:
-                #         reply_message = Phrase.get("City", "INVALID_RESP")
-                #     else:
-                #         tz_name = resp.json()["timeZone"]
-                #         setup = {'TIMEZONE': tz_name, 'RETURN_AS_TIMEZONE_AWARE': True}
-                #         datetime_obj = dateparser.parse(datetime, settings=setup)
-                #
-                #         if datetime_obj:
-                #             if datetime_obj > timezone.now():
-                #                 reminder_request_data = {
-                #                     "text": text,
-                #                     "datetime": datetime_obj,
-                #                     "status": Reminder.Status.ACTIVE,
-                #                     "user": user_id
-                #                 }
-                #                 print(reminder_request_data)
-                #                 print(type(datetime_obj))
-                #                 dispatch("post", "reminder-list", data=reminder_request_data)
-                #
-                #                 reply_message = Phrase.get("CreateReminder", "VALID_DATETIME")
-                #             else:
-                #                 reply_message = Phrase.get("CreateReminder", "PAST_DATETIME")
-                #         else:
-                #             reply_message = Phrase.get("CreateReminder", "INVALID_RESP")
-                # else:
-                #     reply_message = Phrase.get("CreateReminder", "WRONG_REMINDER_FORMAT")
-                # bot.send_message(user_id, reply_message)
-                pass
+                db_city_data = retrieve_city(db_user_data["city"])
+                response = timezone_api_request(db_city_data["lat"], db_city_data["lon"])
+                if response.ok and response.headers.get("Content-Type", "").startswith("application/json"):
+                    inc_timezone_data = response.json()
+                    if inc_timezone_data:
+                        timezone_name = inc_timezone_data["timeZone"]
+                        setup = {'TIMEZONE': timezone_name, 'RETURN_AS_TIMEZONE_AWARE': True}
+                        dates = search_dates(message.text, settings=setup)
+
+                        if dates:
+                            if len(dates) == 1:
+                                datetime_string, datetime_obj = dates[0]
+                                if datetime_obj > timezone.now():
+                                    reminder_request_data = {
+                                        "text": message.text.replace(datetime_string, ""),
+                                        "datetime": datetime_obj,
+                                        "status": Reminder.Status.ACTIVE,
+                                        "user": user_id
+                                    }
+                                    create_reminder(reminder_request_data)
+
+                                    reply_message = Phrase.get("CreateReminder", "VALID_REMINDER")
+                                else:
+                                    reply_message = Phrase.get("CreateReminder", "PAST_DATETIME")
+                            else:
+                                reply_message = Phrase.get("CreateReminder", "SEVERAL_DATES")
+                        else:
+                            reply_message = Phrase.get("CreateReminder", "INVALID_REMINDER")
+                else:
+                    reply_message = Phrase.get("CreateReminder", "INVALID_RESP")
             case User.Step.ADD_DATETIME:
                 pass
             case User.Step.UPDATE_DATETIME:
                 pass
             case User.Step.UPDATE_TEXT:
                 pass
+    bot.send_message(user_id, reply_message)
 
 
 bot.infinity_polling()

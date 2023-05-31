@@ -19,3 +19,7 @@ def create_user(data):
 
 def update_user(pk, data):
     return retrieve_update_destroy_request(http_method_name="patch", instance_name="user", pk=pk, data=data)
+
+
+def create_reminder(data):
+    return list_create_request(http_method_name="post", instance_name="reminder", data=data)
