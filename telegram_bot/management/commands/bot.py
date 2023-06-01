@@ -1,5 +1,4 @@
 from django.core.management.base import BaseCommand
-from django.conf import settings
 from django.utils import timezone, translation
 
 from api.models import *
@@ -76,6 +75,11 @@ def handle_city(message):
     with translation.override(db_user_data["language_code"]):
         reply_message = Phrase.get("City", "INSTRUCTION")
     bot.send_message(user_id, reply_message)
+
+
+@bot.message_handler(commands=["reminders"])
+def handle_reminders(message):
+    pass
 
 
 @bot.callback_query_handler(func=lambda call: True)

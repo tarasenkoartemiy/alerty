@@ -29,11 +29,7 @@ class UserViewSet(mixins.CreateModelMixin,
         return Response(serializer.data)
 
 
-class ReminderViewSet(mixins.CreateModelMixin,
-                      mixins.RetrieveModelMixin,
-                      mixins.UpdateModelMixin,
-                      mixins.DestroyModelMixin,
-                      viewsets.GenericViewSet):
+class ReminderViewSet(viewsets.ModelViewSet):
     queryset = Reminder.objects.all()
     serializer_class = ReminderSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
