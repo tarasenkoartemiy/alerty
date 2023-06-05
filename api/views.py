@@ -3,6 +3,8 @@ from rest_framework import mixins
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 from .serializers import *
 from .models import *
 
@@ -32,6 +34,8 @@ class UserViewSet(mixins.CreateModelMixin,
 class ReminderViewSet(viewsets.ModelViewSet):
     queryset = Reminder.objects.all()
     serializer_class = ReminderSerializer
+    filter_backends = [DjangoFilterBackend]
+    filter_fields = ["user"]
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def destroy(self, request, *args, **kwargs):

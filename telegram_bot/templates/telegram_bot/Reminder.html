@@ -1,0 +1,10 @@
+{% load tz %}
+
+<b>- {{ header }}:</b>
+{{ reminder.text }}
+
+<b>- {{ datetime }}:</b>
+{{reminder.datetime|localtime}}
+
+<b>- {{ status }}:</b>
+{{ reminder.status }}

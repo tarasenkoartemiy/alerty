@@ -1,19 +1,11 @@
-{{ header1 }}
+<b>- {{ header }}:</b>
 
-{{ header2 }}:
-- <b>{{ example1 }}</b>
-
-{{ header3 }}:
-- {{ example2 }}
-
-
-{{ header4 }}:
-{% for reminder in reminders%} {% spaceless %}
-{% if  reminder.is_active %}
-<b>{{ forloop.counter }}. {{ reminder.text }}   {{ reminder.date_time | date:"d.m.y" }} {{ preposition }} {{ reminder.date_time | time:"H:i" }}</b>
-{% else %}
-{{ forloop.counter }}. {{ reminder.text }}   {{ reminder.date_time | date:"d.m.y" }} {{ preposition }} {{ reminder.date_time | time:"H:i" }}
+{% for reminder in user_reminders%} {% spaceless %}
+    {% if  reminder.status == "active" %}
+        <b>{{ forloop.counter }}. {{ reminder.text }}</b> &#127383;
+    {% else %}
+        {{ forloop.counter }}. {{ reminder.text }} &#128164;
 {% endif %}
 {% endspaceless %}
 {% endfor %}
-*{{ relevance }}
+- {{ instruction }}

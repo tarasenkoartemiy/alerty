@@ -21,5 +21,13 @@ def update_user(pk, data):
     return alerty_api_request(http_method_name="patch", instance_name="user", pk=pk, data=data)
 
 
+def retrieve_reminder(pk):
+    return alerty_api_request(http_method_name="get", instance_name="reminder", pk=pk)
+
+
 def create_reminder(data):
     return alerty_api_request(http_method_name="post", instance_name="reminder", data=data)
+
+
+def get_personal_reminders(pk):
+    return alerty_api_request(http_method_name="get", instance_name="reminder", params={"user": pk})

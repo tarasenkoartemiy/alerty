@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-05-31 15:31+0300\n"
+"POT-Creation-Date: 2023-06-05 10:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,6 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || "
 "(n%100>=11 && n%100<=14)? 2 : 3);\n"
+
 #: values.py:7
 msgid "What should I remind you about?"
 msgstr "О чем вам напомнить?"
@@ -60,29 +61,57 @@ msgid "Your language has been successfully changed"
 msgstr "Ваш язык был успешно изменен"
 
 #: values.py:23
+msgid "Reminder"
+msgstr "Напоминание"
+
+#: values.py:24
+msgid "Dispatch time"
+msgstr "Время отправки"
+
+#: values.py:25
+msgid "Status"
+msgstr "Статус"
+
+#: values.py:26
+msgid "Reminder not found"
+msgstr "Напоминание не найдено"
+
+#: values.py:29
+msgid "My reminders"
+msgstr "Мои напоминания"
+
+#: values.py:30
+msgid "Select number to edit"
+msgstr "Выберите номер для редактирования"
+
+#: values.py:31
+msgid "You have no reminders"
+msgstr "У вас нет напоминаний"
+
+#: values.py:34
 msgid "I can't determine what time zone you are in right now. Please try again later"
 msgstr "Я не могу определить, в каком часовом поясе вы сейчас находитесь. Пожалуйста, повторите попытку позже"
 
-#: values.py:24
+#: values.py:35
 msgid "Reminder successfully recorded"
 msgstr "Напоминание успешно записано"
 
-#: values.py:25
+#: values.py:36
 msgid "You cannot select a date that has already passed"
 msgstr "Вы не можете выбрать дату, которая уже прошла"
 
-#: values.py:26
+#: values.py:37
 msgid "I can't recognize the datetime in your reminder"
 msgstr "Я не могу распознать дату и время в вашем напоминании"
 
-#: values.py:27
+#: values.py:38
 msgid "I found several datetime indications in your reminder, please indicate only one"
 msgstr "Я нашел несколько указаний даты и времени в вашем напоминании, пожалуйста, укажите только одно"
 
-#: values.py:30
+#: values.py:41
 msgid "English"
 msgstr "Английский"
 
-#: values.py:31
+#: values.py:42
 msgid "Russian"
 msgstr "Русский"

@@ -19,6 +19,17 @@ class Phrase:
         SAME_CHOICE = _("This language has already been chosen by you")
         ANOTHER_CHOICE = _("Your language has been successfully changed")
 
+    class Reminder:
+        HEADER = _("Reminder")
+        DATETIME = _("Dispatch time")
+        STATUS = _("Status")
+        NO_REMINDER = _("Reminder not found")
+
+    class Reminders:
+        HEADER = _("My reminders")
+        INSTRUCTION = _("Select number to edit")
+        NO_REMINDERS = _("You have no reminders")
+
     class CreateReminder:
         INVALID_RESP = _("I can't determine what time zone you are in right now. Please try again later")
         VALID_REMINDER = _("Reminder successfully recorded")
