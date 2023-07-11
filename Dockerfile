@@ -1,13 +1,13 @@
-FROM python:3.10-alpine3.17
+FROM python:3.10-alpine3.18
 
 WORKDIR /alerty
 COPY . .
 EXPOSE 8000
 
-RUN apk add postgresql-client build-base postgresql-dev
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-RUN pip install -r requirements.txt
-
-RUN adduser --disabled-password alerty-user
-
-USER alerty-user
+RUN apk update &&  \
+    apk add postgresql-client build-base postgresql-dev &&  \
+    pip install --upgrade pip &&  \
+    pip install -r requirements.txt \

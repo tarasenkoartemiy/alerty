@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.utils import timezone
-from .models import *
+from .models import City, User, Reminder
 
 admin.site.site_header = "Alerty"
-admin.site.index_title = "My super puper admin"
+admin.site.index_title = "This is a simple admin panel;)"
 
 
 @admin.register(City)
