@@ -35,7 +35,3 @@ class Phrase:
         PAST_DATETIME = _("You cannot select a date that has already passed")
         INVALID_REMINDER = _("I can't recognize the datetime in your reminder")
         SEVERAL_DATES = _("I found several datetime indications in your reminder, please indicate only one")
-
-    class Button:
-        EN = _("English")
-        RU = _("Russian")
