@@ -19,6 +19,7 @@ class Phrase:
         ANOTHER_CHOICE = _("Your language has been successfully changed")
 
     class Reminder:
+        EXPIRED = _("Sorry, this reminder can no longer be sent")
         HEADER = _("Reminder")
         DATETIME = _("Dispatch time")
         STATUS = _("Status")

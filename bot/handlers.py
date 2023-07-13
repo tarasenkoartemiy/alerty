@@ -72,7 +72,7 @@ def handle_callback_query(call):
 
 @bot.message_handler(content_types=["text"])
 def handle_text(message):
-    user = User.objects.select_related("city").get(id=message.chat.id)
+    user = User.objects.select_related("city").defer("city__name").get(id=message.chat.id)
     match user.step:
         case User.Step.UPDATE_CITY:
             params = {"city": message.text, "format": "json", "limit": 1}
@@ -116,7 +116,7 @@ def handle_text(message):
                         if datetime_obj > timezone.now():
                             Reminder.objects.create(
                                 text=message.text.replace(datetime_string, ""),
-                                datetime=datetime_obj,
+                                datetime=datetime_obj.replace(second=0),
                                 status=Reminder.Status.ACTIVE,
                                 user=user
                             )

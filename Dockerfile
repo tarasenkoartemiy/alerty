@@ -9,5 +9,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 RUN apk update &&  \
     apk add postgresql-client build-base postgresql-dev &&  \
+    apk add gettext &&  \
     pip install --upgrade pip &&  \
     pip install -r requirements.txt \

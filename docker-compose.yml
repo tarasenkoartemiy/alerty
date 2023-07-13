@@ -6,8 +6,9 @@ services:
     env_file:
       - alerty/.env
     command: >
-      sh -c "python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000 --noreload"
+      sh -c "python manage.py compilemessages &&
+                   python manage.py migrate &&
+                   python manage.py runserver 0.0.0.0:8000 --noreload"
     ports:
       - "8000:8000"
     depends_on:
@@ -34,5 +35,18 @@ services:
       - "4040:4040"
     depends_on:
       - bot
+  redis:
+    image: redis:7.0-alpine3.18
+  celery:
+    restart: unless-stopped
+    build:
+      context: .
+    env_file:
+      - alerty/.env
+    command: celery -A alerty worker -B -l info
+    depends_on:
+      - database
+      - bot
+      - redis
 volumes:
   postgres-data:
